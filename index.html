@@ -2,9 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>STR Deal Calculator | GPWN</title>
+
+  <!-- Google Font (matching welcome.gpwn.co) -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+
   <style>
     body {
       margin: 0;
@@ -18,6 +21,7 @@
       min-height: 100vh;
       padding: 0 20px;
     }
+
     .container {
       max-width: 480px;
       width: 100%;
@@ -27,16 +31,19 @@
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
     }
+
     h1 {
       font-size: 28px;
       margin-bottom: 10px;
       font-weight: 700;
     }
+
     p {
       font-size: 16px;
       margin-bottom: 30px;
       color: #cccccc;
     }
+
     input, select, button {
       width: 100%;
       padding: 12px;
@@ -45,13 +52,16 @@
       border: none;
       font-size: 14px;
     }
+
     input, select {
       background-color: #2b2b2b;
       color: #ffffff;
     }
+
     input::placeholder {
       color: #999999;
     }
+
     button {
       background-color: #0ac06b;
       color: #ffffff;
@@ -59,9 +69,11 @@
       cursor: pointer;
       transition: background 0.2s ease;
     }
+
     button:hover {
       background-color: #089e59;
     }
+
     .disclaimer {
       font-size: 12px;
       color: #888888;
@@ -69,11 +81,13 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>Get Instant Access</h1>
     <p>Use our free STR Deal Calculator to analyze any Airbnb deal in seconds.</p>
-    <form action="https://formspree.io/f/REPLACE_WITH_YOUR_FORMSPREE_ID" method="POST">
+
+    <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
       <input type="email" name="email" placeholder="Email Address" required />
       <input type="tel" name="phone" placeholder="Mobile Number" required />
       <select name="country" required>
@@ -84,9 +98,13 @@
         <option value="Canada">Canada</option>
         <option value="Other">Other</option>
       </select>
-      <input type="hidden" name="_redirect" value="https://wealth-flo.github.io/deal-calculator/calculator.html" />
+
+      <!-- Redirect to calculator after submission -->
+      <input type="hidden" name="_redirect" value="https://dealcalculator.gpwn.co/calculator.html" />
+
       <button type="submit">Access the Calculator</button>
     </form>
+
     <p class="disclaimer">By submitting, you agree to receive occasional updates from GPWN. We never spam.</p>
   </div>
 </body>
