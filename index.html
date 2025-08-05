@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>STR Deal Calculator | GPWN</title>
 
-  <!-- Google Font (matching welcome.gpwn.co) -->
+  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
@@ -87,7 +87,7 @@
     <h1>Get Instant Access</h1>
     <p>Use our free STR Deal Calculator to analyze any Airbnb deal in seconds.</p>
 
-    <form action="https://formspree.io/f/xzzvjryb" method="POST">
+    <form id="leadForm">
       <input type="text" name="name" placeholder="Full Name" required />
       <input type="email" name="email" placeholder="Email Address" required />
       <input type="tel" name="phone" placeholder="Mobile Number" required />
@@ -99,14 +99,35 @@
         <option value="Canada">Canada</option>
         <option value="Other">Other</option>
       </select>
-
-      <!-- Redirect to calculator after submission -->
-      <input type="hidden" name="_redirect" value="https://dealcalculator.gpwn.co/calculator.html" />
-
       <button type="submit">Access the Calculator</button>
     </form>
 
     <p class="disclaimer">By submitting, you agree to receive occasional updates from GPWN. We never spam.</p>
   </div>
+
+  <script>
+    document.getElementById("leadForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const form = e.target;
+      const data = new FormData(form);
+
+      try {
+        const response = await fetch("https://formspree.io/f/xzzvjryb", {
+          method: "POST",
+          body: data,
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (response.ok) {
+          window.location.href = "https://dealcalculator.gpwn.co/calculator.html";
+        } else {
+          alert("There was a problem submitting the form. Please try again.");
+        }
+      } catch (error) {
+        alert("Submission failed. Please check your internet connection.");
+      }
+    });
+  </script>
 </body>
 </html>
