@@ -1,0 +1,3074 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>STR Deal Analysis Calculator - James Murphy Edition</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        .tab-content { display: none; }
+
+        .tab-content.active { display: block; }
+
+        .pass { color: #10b981; font-weight: bold; }
+
+        .warning { color: #f59e0b; font-weight: bold; }
+
+        .fail { color: #ef4444; font-weight: bold; }
+
+        .green-light { background: linear-gradient(135deg, #10b981, #059669); }
+
+        .yellow-light { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        .red-light { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+        .tooltip { position: relative; display: inline-block; cursor: help; }
+
+        .tooltip .tooltiptext {
+
+            visibility: hidden; width: 200px; background-color: #333; color: #fff;
+
+            text-align: center; border-radius: 6px; padding: 8px;
+
+            position: absolute; z-index: 1; bottom: 125%; left: 50%;
+
+            margin-left: -100px; opacity: 0; transition: opacity 0.3s;
+
+            font-size: 12px;
+
+        }
+
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+
+        .risk-flag { animation: pulse 2s infinite; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        @media print {
+
+            .no-print { display: none !important; }
+
+            .print-only { display: block !important; }
+
+        }
+
+        .scenario-card { transition: all 0.3s ease; }
+
+        .scenario-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+
+    </style>
+
+</head>
+
+<body class="bg-gray-50 font-sans">
+
+    <div class="max-w-7xl mx-auto p-6">
+
+        <!-- Header -->
+
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">STR Deal Analysis Calculator</h1>
+
+                    <p class="text-gray-600">Professional-grade short-term rental investment analysis tool</p>
+
+                </div>
+
+                <div class="flex space-x-3">
+
+                    <button onclick="saveScenario()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">💾 Save Deal</button>
+
+                    <button onclick="exportExcel()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">📊 Export Excel</button>
+
+                    <button onclick="resetCalculator()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">🔄 Reset</button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Tab Navigation -->
+
+        <div class="bg-white rounded-lg shadow-sm mb-6 no-print">
+
+            <div class="border-b border-gray-200">
+
+                <nav class="flex space-x-6 px-6 overflow-x-auto">
+
+                    <button onclick="showTab('tutorial')" class="tab-btn py-4 px-1 border-b-2 border-blue-500 text-blue-600 font-medium whitespace-nowrap">📘 Tutorial</button>
+
+                    <button onclick="showTab('calculator')" class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">🧮 Calculator</button>
+
+                    <button onclick="showTab('projections')" class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">📊 Projections</button>
+
+                    <button onclick="showTab('filter')" class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">🔍 4-Lens Filter</button>
+
+                    <button onclick="showTab('dashboard')" class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">📈 Dashboard</button>
+
+                    <button onclick="showTab('cases')" class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">📚 Case Studies</button>
+
+                    <button onclick="showTab('summary')" class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">🖨️ Print Summary</button>
+
+                </nav>
+
+            </div>
+
+        </div>
+
+
+        <!-- Tab 0: Tutorial -->
+
+        <div id="tutorial" class="tab-content active">
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <div class="bg-white rounded-lg shadow-sm p-6">
+
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">📘 Welcome to STR Deal Analysis</h2>
+
+                    <div class="space-y-4">
+
+                        <div class="p-4 bg-blue-50 rounded-lg">
+
+                            <h3 class="font-semibold text-blue-900 mb-2">How This Calculator Works</h3>
+
+                            <p class="text-blue-800 text-sm">Enter your property details and monthly ADR/occupancy data. The calculator will automatically compute profitability metrics, risk assessments, and investment verdicts based on proven STR investment criteria.</p>
+
+                        </div>
+
+                        <div class="p-4 bg-green-50 rounded-lg">
+
+                            <h3 class="font-semibold text-green-900 mb-2">Key Input Definitions</h3>
+
+                            <ul class="text-green-800 text-sm space-y-1">
+
+                                <li><strong>ADR:</strong> Average Daily Rate - what guests pay per night</li>
+
+                                <li><strong>Occupancy:</strong> % of available nights booked</li>
+
+                                <li><strong>Setup Cost:</strong> Initial investment (furniture, licenses, etc.)</li>
+
+                                <li><strong>ROCE:</strong> Return on Capital Employed - annual profit vs setup cost</li>
+
+                            </ul>
+
+                        </div>
+
+                        <div class="p-4 bg-yellow-50 rounded-lg">
+
+                            <h3 class="font-semibold text-yellow-900 mb-2">4-Lens Filter Explained</h3>
+
+                            <ul class="text-yellow-800 text-sm space-y-1">
+
+                                <li>🟢 <strong>ROCE ≥ 100%:</strong> Strong annual returns</li>
+
+                                <li>🟢 <strong>Profit ≥ $1,000/month:</strong> Meaningful cash flow</li>
+
+                                <li>🟢 <strong>ADR-to-Rent ≥ 8%:</strong> Pricing power vs rent</li>
+
+                                <li>🟢 <strong>Occupancy ≥ 60%:</strong> Market demand validation</li>
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm p-6">
+
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">🚦 Traffic Light System</h2>
+
+                    <div class="space-y-4">
+
+                        <div class="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+
+                            <span class="text-2xl">🟢</span>
+
+                            <div>
+
+                                <h3 class="font-semibold text-green-900">Green Light</h3>
+
+                                <p class="text-green-800 text-sm">3-4 criteria passed. Strong investment opportunity.</p>
+
+                            </div>
+
+                        </div>
+
+                        <div class="flex items-center space-x-3 p-3 bg-yellow-50 rounded-lg">
+
+                            <span class="text-2xl">🟡</span>
+
+                            <div>
+
+                                <h3 class="font-semibold text-yellow-900">Needs Review</h3>
+
+                                <p class="text-yellow-800 text-sm">2 criteria passed. Requires optimization.</p>
+
+                            </div>
+
+                        </div>
+
+                        <div class="flex items-center space-x-3 p-3 bg-red-50 rounded-lg">
+
+                            <span class="text-2xl">🔴</span>
+
+                            <div>
+
+                                <h3 class="font-semibold text-red-900">Red Light</h3>
+
+                                <p class="text-red-800 text-sm">0-1 criteria passed. High risk investment.</p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mt-6 p-4 bg-purple-50 rounded-lg">
+
+                        <h3 class="font-semibold text-purple-900 mb-2">💡 Best Practices</h3>
+
+                        <ul class="text-purple-800 text-sm space-y-1">
+
+                            <li>• Use conservative occupancy estimates (60-70%)</li>
+
+                            <li>• Research local ADR data from AirDNA or similar</li>
+
+                            <li>• Include all setup costs (furniture, cleaning supplies, etc.)</li>
+
+                            <li>• Factor in seasonal variations for monthly inputs</li>
+
+                            <li>• Always validate with local STR regulations</li>
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Tab 1: Calculator -->
+
+        <div id="calculator" class="tab-content">
+
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+                <!-- Basic Inputs -->
+
+                <div class="bg-white rounded-lg shadow-sm p-6">
+
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">🏠 Property Details</h2>
+
+                    <div class="space-y-4">
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Property Address</label>
+
+                            <input type="text" id="propertyAddress" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="123 Main St, City, State" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+
+                                Monthly Rent ($)
+
+                                <span class="tooltip">ℹ️
+
+                                    <span class="tooltiptext">Total monthly rent you'll pay to the landlord</span>
+
+                                </span>
+
+                            </label>
+
+                            <input type="number" id="monthlyRent" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="2000" oninput="syncRentFields(); calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Available Nights per Month</label>
+
+                            <input type="number" id="availableNights" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="30" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+
+                                Total Setup Cost ($)
+
+                                <span class="tooltip">ℹ️
+
+                                    <span class="tooltiptext">Auto-calculated from breakdown below</span>
+
+                                </span>
+
+                            </label>
+
+                            <input type="number" id="setupCost" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100" value="5000" readonly>
+
+                        </div>
+
+                    </div>
+
+
+                    <h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4">🏗️ Setup Cost Breakdown</h3>
+
+                    <div class="space-y-3">
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Security Deposit ($)</label>
+
+                            <input type="number" id="securityDeposit" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="2000" oninput="calculateSetupCost()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Contractor Costs ($)</label>
+
+                            <input type="number" id="contractorCosts" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="800" oninput="calculateSetupCost()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Furniture Costs ($)</label>
+
+                            <input type="number" id="furnitureCosts" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="1500" oninput="calculateSetupCost()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Soft Furnishings Cost ($)</label>
+
+                            <input type="number" id="softFurnishings" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="400" oninput="calculateSetupCost()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Deep Clean Cost ($)</label>
+
+                            <input type="number" id="deepCleanCost" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="150" oninput="calculateSetupCost()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Electricals Cost ($)</label>
+
+                            <input type="number" id="electricalsCost" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="100" oninput="calculateSetupCost()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Interior Design Cost ($)</label>
+
+                            <input type="number" id="interiorDesignCost" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="" oninput="calculateSetupCost()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Painting & Decorating ($)</label>
+
+                            <input type="number" id="paintingCost" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="50" oninput="calculateSetupCost()">
+
+                        </div>
+
+                    </div>
+
+
+                    <h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4">💰 Monthly Operating Costs</h3>
+
+                    <div class="space-y-3">
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Rent ($)</label>
+
+                            <input type="number" id="monthlyCostRent" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100" readonly>
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+
+                                Airbnb/Channel Fees (%)
+
+                                <span class="tooltip">ℹ️
+
+                                    <span class="tooltiptext">Percentage commission charged by booking platforms</span>
+
+                                </span>
+
+                            </label>
+
+                            <input type="number" id="airbnbCommission" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="3" step="0.1" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Management Co Hosting Costs ($)</label>
+
+                            <input type="number" id="managementCosts" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="200" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cleaning ($)</label>
+
+                            <input type="number" id="cleaningCost" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="300" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Guest Supplies/Toiletries ($)</label>
+
+                            <input type="number" id="guestSupplies" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="80" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Utilities (Electricity, Gas, Water) ($)</label>
+
+                            <input type="number" id="utilities" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="200" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Broadband & TV ($)</label>
+
+                            <input type="number" id="broadbandTV" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="60" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Insurance ($)</label>
+
+                            <input type="number" id="insurance" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="120" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Repair & Maintenance ($)</label>
+
+                            <input type="number" id="repairMaintenance" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="150" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Price Labs ($)</label>
+
+                            <input type="number" id="priceLabs" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="20" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Property Management System (Guesty) ($)</label>
+
+                            <input type="number" id="pms" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="50" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Channel Manager ($)</label>
+
+                            <input type="number" id="channelManager" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="30" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Other Costs ($)</label>
+
+                            <input type="number" id="otherCosts" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="50" oninput="calculate()">
+
+                        </div>
+
+                        <div class="pt-3 border-t border-gray-200">
+
+                            <div class="flex justify-between items-center">
+
+                                <span class="text-sm font-medium text-gray-700">Total Monthly OpEx:</span>
+
+                                <span id="totalMonthlyOpEx" class="font-bold text-lg text-red-600">$1,260</span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Monthly ADR Inputs -->
+
+                <div class="bg-white rounded-lg shadow-sm p-6">
+
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">📅 Monthly ADR ($)</h2>
+
+                    <div class="grid grid-cols-2 gap-3">
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Jan</label>
+
+                            <input type="number" id="adr-jan" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="150" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Feb</label>
+
+                            <input type="number" id="adr-feb" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="160" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Mar</label>
+
+                            <input type="number" id="adr-mar" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="170" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Apr</label>
+
+                            <input type="number" id="adr-apr" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="180" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">May</label>
+
+                            <input type="number" id="adr-may" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="190" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Jun</label>
+
+                            <input type="number" id="adr-jun" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="200" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Jul</label>
+
+                            <input type="number" id="adr-jul" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="210" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Aug</label>
+
+                            <input type="number" id="adr-aug" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="200" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Sep</label>
+
+                            <input type="number" id="adr-sep" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="180" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Oct</label>
+
+                            <input type="number" id="adr-oct" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="170" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Nov</label>
+
+                            <input type="number" id="adr-nov" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="160" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Dec</label>
+
+                            <input type="number" id="adr-dec" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="180" oninput="calculate()">
+
+                        </div>
+
+                    </div>
+
+
+                    <h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4">📊 Monthly Occupancy (%)</h3>
+
+                    <div class="grid grid-cols-2 gap-3">
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Jan</label>
+
+                            <input type="number" id="occ-jan" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="60" min="0" max="100" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Feb</label>
+
+                            <input type="number" id="occ-feb" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="65" min="0" max="100" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Mar</label>
+
+                            <input type="number" id="occ-mar" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="70" min="0" max="100" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Apr</label>
+
+                            <input type="number" id="occ-apr" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="75" min="0" max="100" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">May</label>
+
+                            <input type="number" id="occ-may" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="80" min="0" max="100" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Jun</label>
+
+                            <input type="number" id="occ-jun" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="85" min="0" max="100" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Jul</label>
+
+                            <input type="number" id="occ-jul" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="90" min="0" max="100" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Aug</label>
+
+                            <input type="number" id="occ-aug" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="85" min="0" max="100" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Sep</label>
+
+                            <input type="number" id="occ-sep" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="75" min="0" max="100" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Oct</label>
+
+                            <input type="number" id="occ-oct" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="70" min="0" max="100" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Nov</label>
+
+                            <input type="number" id="occ-nov" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="65" min="0" max="100" oninput="calculate()">
+
+                        </div>
+
+                        <div>
+
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Dec</label>
+
+                            <input type="number" id="occ-dec" class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" value="75" min="0" max="100" oninput="calculate()">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Calculated Outputs -->
+
+                <div class="bg-white rounded-lg shadow-sm p-6">
+
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">🧮 Key Metrics</h2>
+
+                    <div class="space-y-4">
+
+                        <div class="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg">
+
+                            <div class="flex justify-between items-center">
+
+                                <span class="text-green-800 font-medium">Annual Revenue</span>
+
+                                <span id="annualRevenue" class="font-bold text-green-900 text-lg">$65,100</span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
+
+                            <div class="flex justify-between items-center">
+
+                                <span class="text-blue-800 font-medium">Annual Net Profit</span>
+
+                                <span id="annualNetProfit" class="font-bold text-blue-900 text-lg">$33,900</span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg">
+
+                            <div class="flex justify-between items-center">
+
+                                <span class="text-purple-800 font-medium">ROCE</span>
+
+                                <span id="roceDisplay" class="font-bold text-purple-900 text-lg">678%</span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg">
+
+                            <div class="flex justify-between items-center">
+
+                                <span class="text-orange-800 font-medium">Payback Period</span>
+
+                                <span id="paybackDisplay" class="font-bold text-orange-900 text-lg">1.8 months</span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="mt-6 p-4 rounded-lg" id="smartScore">
+
+                        <h3 class="text-lg font-semibold text-white mb-2">Smart Score</h3>
+
+                        <div class="flex items-center space-x-3">
+
+                            <div class="flex-1 bg-white bg-opacity-30 rounded-full h-3">
+
+                                <div id="scoreBar" class="bg-white h-3 rounded-full transition-all duration-500" style="width: 85%"></div>
+
+                            </div>
+
+                            <span id="scoreValue" class="text-white font-bold text-xl">85/100</span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div id="riskFlags" class="mt-4 space-y-2"></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Sensitivity Analysis -->
+
+            <div class="mt-6 bg-white rounded-lg shadow-sm p-6">
+
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🎯 Sensitivity Analysis</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                    <button onclick="applySensitivity('conservative')" class="scenario-card p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition-all">
+
+                        <h3 class="font-semibold text-gray-900 mb-2">Conservative</h3>
+
+                        <p class="text-sm text-gray-600">Low ADR/Occupancy</p>
+
+                    </button>
+
+                    <button onclick="applySensitivity('realistic')" class="scenario-card p-4 border-2 border-blue-500 bg-blue-50 rounded-lg">
+
+                        <h3 class="font-semibold text-blue-900 mb-2">Realistic</h3>
+
+                        <p class="text-sm text-blue-700">Current Settings</p>
+
+                    </button>
+
+                    <button onclick="applySensitivity('aggressive')" class="scenario-card p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 transition-all">
+
+                        <h3 class="font-semibold text-gray-900 mb-2">Aggressive</h3>
+
+                        <p class="text-sm text-gray-600">High Performance</p>
+
+                    </button>
+
+                    <button onclick="applySensitivity('worst')" class="scenario-card p-4 border-2 border-gray-200 rounded-lg hover:border-red-500 transition-all">
+
+                        <h3 class="font-semibold text-gray-900 mb-2">Worst Case</h3>
+
+                        <p class="text-sm text-gray-600">Low Season</p>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Tab 2: Projections -->
+
+        <div id="projections" class="tab-content">
+
+            <div class="bg-white rounded-lg shadow-sm p-6">
+
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">📊 Monthly Projections</h2>
+
+                <div class="overflow-x-auto">
+
+                    <table class="w-full text-sm">
+
+                        <thead class="bg-gray-50">
+
+                            <tr>
+
+                                <th class="px-4 py-3 text-left font-semibold text-gray-900">Month</th>
+
+                                <th class="px-4 py-3 text-right font-semibold text-gray-900">ADR</th>
+
+                                <th class="px-4 py-3 text-right font-semibold text-gray-900">Occ%</th>
+
+                                <th class="px-4 py-3 text-right font-semibold text-gray-900">Nights</th>
+
+                                <th class="px-4 py-3 text-right font-semibold text-gray-900">Revenue</th>
+
+                                <th class="px-4 py-3 text-right font-semibold text-gray-900">Channel Fees</th>
+
+                                <th class="px-4 py-3 text-right font-semibold text-gray-900">Total OpEx</th>
+
+                                <th class="px-4 py-3 text-right font-semibold text-gray-900">Net Profit</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="projectionsTable" class="divide-y divide-gray-200">
+
+                            <!-- Populated by JavaScript -->
+
+                        </tbody>
+
+                        <tfoot class="bg-gray-50 font-semibold">
+
+                            <tr>
+
+                                <td class="px-4 py-3 text-left">ANNUAL TOTAL</td>
+
+                                <td class="px-4 py-3 text-right" id="avgADR">$178</td>
+
+                                <td class="px-4 py-3 text-right" id="avgOcc">74%</td>
+
+                                <td class="px-4 py-3 text-right" id="totalNights">266</td>
+
+                                <td class="px-4 py-3 text-right text-green-600" id="totalRevenue">$65,100</td>
+
+                                <td class="px-4 py-3 text-right text-red-600" id="totalAirbnbFees">$1,953</td>
+
+                                <td class="px-4 py-3 text-right text-red-600" id="totalOpEx">$31,200</td>
+
+                                <td class="px-4 py-3 text-right text-blue-600" id="totalNetProfit">$33,900</td>
+
+                            </tr>
+
+                        </tfoot>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Tab 3: 4-Lens Filter -->
+
+        <div id="filter" class="tab-content">
+
+            <div class="bg-white rounded-lg shadow-sm p-6">
+
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🔍 4-Lens Validation Filter</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div class="space-y-4">
+
+                        <div class="border border-gray-200 rounded-lg p-4">
+
+                            <div class="flex justify-between items-center mb-2">
+
+                                <h3 class="font-semibold text-gray-900">ROCE Lens</h3>
+
+                                <span id="roce-status" class="pass">✅ PASS</span>
+
+                            </div>
+
+                            <p class="text-sm text-gray-600 mb-2">Target: ≥ 100% annually</p>
+
+                            <p class="text-sm">Current: <span id="roce-current" class="font-semibold">678%</span></p>
+
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4">
+
+                            <div class="flex justify-between items-center mb-2">
+
+                                <h3 class="font-semibold text-gray-900">Monthly Profit Lens</h3>
+
+                                <span id="profit-status" class="pass">✅ PASS</span>
+
+                            </div>
+
+                            <p class="text-sm text-gray-600 mb-2">Target: ≥ $1,000/month</p>
+
+                            <p class="text-sm">Current: <span id="profit-current" class="font-semibold">$2,825</span></p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="space-y-4">
+
+                        <div class="border border-gray-200 rounded-lg p-4">
+
+                            <div class="flex justify-between items-center mb-2">
+
+                                <h3 class="font-semibold text-gray-900">ADR-to-Rent Ratio</h3>
+
+                                <span id="ratio-status" class="pass">✅ PASS</span>
+
+                            </div>
+
+                            <p class="text-sm text-gray-600 mb-2">Target: ≥ 8-10%</p>
+
+                            <p class="text-sm">Current: <span id="ratio-current" class="font-semibold">8.9%</span></p>
+
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4">
+
+                            <div class="flex justify-between items-center mb-2">
+
+                                <h3 class="font-semibold text-gray-900">Occupancy Feasibility</h3>
+
+                                <span id="occupancy-status" class="pass">✅ PASS</span>
+
+                            </div>
+
+                            <p class="text-sm text-gray-600 mb-2">Target: ≥ 60% average</p>
+
+                            <p class="text-sm">Current: <span id="occupancy-current" class="font-semibold">74%</span></p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="mt-6 p-6 rounded-lg" id="overall-verdict">
+
+                    <div class="text-center">
+
+                        <span class="text-4xl mb-4 block">🟢</span>
+
+                        <h3 class="text-2xl font-bold text-white mb-2">Green Light</h3>
+
+                        <p class="text-white text-lg" id="verdict-text">4 of 4 criteria passed - Excellent investment opportunity!</p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Tab 4: Dashboard -->
+
+        <div id="dashboard" class="tab-content">
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Key Metrics Cards -->
+
+                <div class="lg:col-span-2 space-y-6">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-lg">
+
+                            <h3 class="text-lg font-semibold mb-2">Annual Revenue</h3>
+
+                            <p class="text-3xl font-bold" id="dash-revenue">$65,100</p>
+
+                            <p class="text-green-100 text-sm mt-1">Monthly avg: $5,425</p>
+
+                        </div>
+
+                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-lg">
+
+                            <h3 class="text-lg font-semibold mb-2">Annual Net Profit</h3>
+
+                            <p class="text-3xl font-bold" id="dash-profit">$33,900</p>
+
+                            <p class="text-blue-100 text-sm mt-1">Monthly avg: $2,825</p>
+
+                        </div>
+
+                        <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-lg">
+
+                            <h3 class="text-lg font-semibold mb-2">ROCE</h3>
+
+                            <p class="text-3xl font-bold" id="dash-roce">678%</p>
+
+                            <p class="text-purple-100 text-sm mt-1">Exceptional returns</p>
+
+                        </div>
+
+                        <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 rounded-lg">
+
+                            <h3 class="text-lg font-semibold mb-2">Payback Period</h3>
+
+                            <p class="text-3xl font-bold" id="dash-payback">1.8 months</p>
+
+                            <p class="text-orange-100 text-sm mt-1">Very fast recovery</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Chart -->
+
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">📈 Monthly Performance</h3>
+
+                        <canvas id="performanceChart" width="400" height="200"></canvas>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Traffic Light & Additional Metrics -->
+
+                <div class="space-y-6">
+
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Deal Health</h3>
+
+                        <div class="text-center">
+
+                            <div class="w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center green-light">
+
+                                <span class="text-4xl">🟢</span>
+
+                            </div>
+
+                            <p class="font-bold text-xl text-gray-900" id="traffic-text">Green Light</p>
+
+                            <p class="text-sm text-gray-600 mt-2" id="traffic-detail">4 of 4 criteria passed</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Additional Metrics</h3>
+
+                        <div class="space-y-3">
+
+                            <div class="flex justify-between">
+
+                                <span class="text-gray-600">Setup Cost</span>
+
+                                <span class="font-semibold" id="dash-setup">$5,000</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span class="text-gray-600">Net Profit Margin</span>
+
+                                <span class="font-semibold" id="dash-margin">52.1%</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span class="text-gray-600">ADR-to-Rent Ratio</span>
+
+                                <span class="font-semibold" id="dash-ratio">8.9%</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span class="text-gray-600">Avg Occupancy</span>
+
+                                <span class="font-semibold" id="dash-occupancy">74%</span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Tab 5: Case Studies -->
+
+        <div id="cases" class="tab-content">
+
+            <div class="bg-white rounded-lg shadow-sm p-6">
+
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">📚 Case Study Library</h2>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    <!-- Brisbane Case -->
+
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
+
+                        <h3 class="font-semibold text-blue-600 mb-3">🇦🇺 Brisbane, Australia</h3>
+
+                        <div class="space-y-2 text-sm">
+
+                            <div class="flex justify-between">
+
+                                <span>Monthly Rent:</span>
+
+                                <span class="font-semibold">$2,800</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Avg ADR:</span>
+
+                                <span class="font-semibold">$240</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Avg Occupancy:</span>
+
+                                <span class="font-semibold">85%</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Annual Revenue:</span>
+
+                                <span class="font-semibold text-green-600">$73,440</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Setup Cost:</span>
+
+                                <span class="font-semibold">$11,200</span>
+
+                            </div>
+
+                            <div class="flex justify-between border-t pt-2">
+
+                                <span>Annual Net Profit:</span>
+
+                                <span class="font-bold text-green-600">$28,800</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>ROCE:</span>
+
+                                <span class="font-semibold text-green-600">257%</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Payback:</span>
+
+                                <span class="font-semibold text-green-600">4.7 months</span>
+
+                            </div>
+
+                        </div>
+
+                        <button onclick="loadCaseStudy('brisbane')" class="w-full mt-3 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Load This Case</button>
+
+                    </div>
+
+
+                    <!-- Dallas Case -->
+
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
+
+                        <h3 class="font-semibold text-blue-600 mb-3">🇺🇸 Dallas, USA</h3>
+
+                        <div class="space-y-2 text-sm">
+
+                            <div class="flex justify-between">
+
+                                <span>Monthly Rent:</span>
+
+                                <span class="font-semibold">$2,500</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Avg ADR:</span>
+
+                                <span class="font-semibold">$220</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Avg Occupancy:</span>
+
+                                <span class="font-semibold">80%</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Annual Revenue:</span>
+
+                                <span class="font-semibold text-green-600">$63,360</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Setup Cost:</span>
+
+                                <span class="font-semibold">$10,000</span>
+
+                            </div>
+
+                            <div class="flex justify-between border-t pt-2">
+
+                                <span>Annual Net Profit:</span>
+
+                                <span class="font-bold text-green-600">$23,760</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>ROCE:</span>
+
+                                <span class="font-semibold text-green-600">238%</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Payback:</span>
+
+                                <span class="font-semibold text-green-600">5.1 months</span>
+
+                            </div>
+
+                        </div>
+
+                        <button onclick="loadCaseStudy('dallas')" class="w-full mt-3 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Load This Case</button>
+
+                    </div>
+
+
+                    <!-- Brighton Case -->
+
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
+
+                        <h3 class="font-semibold text-blue-600 mb-3">🇬🇧 Brighton, UK</h3>
+
+                        <div class="space-y-2 text-sm">
+
+                            <div class="flex justify-between">
+
+                                <span>Monthly Rent:</span>
+
+                                <span class="font-semibold">£2,100</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Avg ADR:</span>
+
+                                <span class="font-semibold">£170</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Avg Occupancy:</span>
+
+                                <span class="font-semibold">75%</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Annual Revenue:</span>
+
+                                <span class="font-semibold text-green-600">£46,575</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Setup Cost:</span>
+
+                                <span class="font-semibold">£9,000</span>
+
+                            </div>
+
+                            <div class="flex justify-between border-t pt-2">
+
+                                <span>Annual Net Profit:</span>
+
+                                <span class="font-bold text-green-600">£15,375</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>ROCE:</span>
+
+                                <span class="font-semibold text-green-600">171%</span>
+
+                            </div>
+
+                            <div class="flex justify-between">
+
+                                <span>Payback:</span>
+
+                                <span class="font-semibold text-green-600">7.0 months</span>
+
+                            </div>
+
+                        </div>
+
+                        <button onclick="loadCaseStudy('brighton')" class="w-full mt-3 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Load This Case</button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Saved Scenarios -->
+
+                <div class="mt-8">
+
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">💾 Your Saved Scenarios</h3>
+
+                    <div id="savedScenarios" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+
+                            <p class="text-gray-500 mb-2">No saved scenarios yet</p>
+
+                            <p class="text-sm text-gray-400">Save your current calculation to compare deals</p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Tab 6: Print Summary -->
+
+        <div id="summary" class="tab-content">
+
+            <div class="bg-white rounded-lg shadow-sm p-8">
+
+                <div class="flex justify-between items-center mb-6 no-print">
+
+                    <h2 class="text-xl font-semibold text-gray-900">🖨️ Investment Summary Report</h2>
+
+                    <div class="space-x-3">
+
+                        <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">📄 Print PDF</button>
+
+                        <button onclick="exportExcel()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">📊 Export Excel</button>
+
+                    </div>
+
+                </div>
+
+               
+
+                <div class="print-summary">
+
+                    <div class="text-center mb-8">
+
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">STR Investment Analysis</h1>
+
+                        <p class="text-gray-600">Professional Deal Evaluation Report</p>
+
+                        <p class="text-gray-500 text-sm">Generated on <span id="report-date"></span></p>
+
+                    </div>
+
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+
+                        <div>
+
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">🏠 Property Information</h3>
+
+                            <div class="space-y-3">
+
+                                <div class="flex justify-between">
+
+                                    <span class="text-gray-600">Address:</span>
+
+                                    <span id="summary-address" class="font-semibold">123 Main St, City</span>
+
+                                </div>
+
+                                <div class="flex justify-between">
+
+                                    <span class="text-gray-600">Monthly Rent:</span>
+
+                                    <span id="summary-rent" class="font-semibold">$2,000</span>
+
+                                </div>
+
+                                <div class="flex justify-between">
+
+                                    <span class="text-gray-600">Average ADR:</span>
+
+                                    <span id="summary-adr" class="font-semibold">$178</span>
+
+                                </div>
+
+                                <div class="flex justify-between">
+
+                                    <span class="text-gray-600">Average Occupancy:</span>
+
+                                    <span id="summary-occupancy" class="font-semibold">74%</span>
+
+                                </div>
+
+                                <div class="flex justify-between">
+
+                                    <span class="text-gray-600">Setup Cost:</span>
+
+                                    <span id="summary-setup" class="font-semibold">$5,000</span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">💰 Financial Performance</h3>
+
+                            <div class="space-y-3">
+
+                                <div class="flex justify-between">
+
+                                    <span class="text-gray-600">Annual Revenue:</span>
+
+                                    <span id="summary-revenue" class="font-semibold text-green-600">$65,100</span>
+
+                                </div>
+
+                                <div class="flex justify-between">
+
+                                    <span class="text-gray-600">Annual Net Profit:</span>
+
+                                    <span id="summary-profit" class="font-semibold text-blue-600">$33,900</span>
+
+                                </div>
+
+                                <div class="flex justify-between">
+
+                                    <span class="text-gray-600">Net Profit Margin:</span>
+
+                                    <span id="summary-margin" class="font-semibold">52.1%</span>
+
+                                </div>
+
+                                <div class="flex justify-between">
+
+                                    <span class="text-gray-600">ROCE (Annual):</span>
+
+                                    <span id="summary-roce" class="font-semibold text-purple-600">678%</span>
+
+                                </div>
+
+                                <div class="flex justify-between">
+
+                                    <span class="text-gray-600">Payback Period:</span>
+
+                                    <span id="summary-payback" class="font-semibold">1.8 months</span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="border-t border-gray-200 pt-6">
+
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">🎯 Investment Verdict</h3>
+
+                        <div class="p-6 rounded-lg text-center" id="summary-verdict">
+
+                            <div class="mb-4">
+
+                                <span class="text-6xl">🟢</span>
+
+                            </div>
+
+                            <h4 class="text-2xl font-bold text-white mb-3">Green Light</h4>
+
+                            <p class="text-white text-lg mb-4">This property meets all key investment criteria and represents an excellent opportunity.</p>
+
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+
+                                <div class="bg-white bg-opacity-20 rounded p-2">
+
+                                    <div class="font-semibold">ROCE</div>
+
+                                    <div>✅ 678%</div>
+
+                                </div>
+
+                                <div class="bg-white bg-opacity-20 rounded p-2">
+
+                                    <div class="font-semibold">Profit</div>
+
+                                    <div>✅ $2,825/mo</div>
+
+                                </div>
+
+                                <div class="bg-white bg-opacity-20 rounded p-2">
+
+                                    <div class="font-semibold">ADR Ratio</div>
+
+                                    <div>✅ 8.9%</div>
+
+                                </div>
+
+                                <div class="bg-white bg-opacity-20 rounded p-2">
+
+                                    <div class="font-semibold">Occupancy</div>
+
+                                    <div>✅ 74%</div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="mt-8 text-center text-sm text-gray-500">
+
+                        <p>This report was generated using the STR Deal Analysis Calculator</p>
+
+                        <p>Always verify local regulations and market conditions before investing</p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // Global variables
+
+        let monthlyData = {};
+
+        let savedScenarios = JSON.parse(localStorage.getItem('strScenarios') || '[]');
+
+        let performanceChart = null;
+
+
+        // Initialize on page load
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            calculateSetupCost();
+
+            syncRentFields();
+
+            calculate();
+
+            updateSavedScenarios();
+
+            document.getElementById('report-date').textContent = new Date().toLocaleDateString();
+
+        });
+
+
+        // Sync rent fields
+
+        function syncRentFields() {
+
+            const monthlyRent = document.getElementById('monthlyRent').value;
+
+            document.getElementById('monthlyCostRent').value = monthlyRent;
+
+        }
+
+
+        // Calculate total setup cost from breakdown
+
+        function calculateSetupCost() {
+
+            const securityDeposit = parseFloat(document.getElementById('securityDeposit').value) || 0;
+
+            const contractorCosts = parseFloat(document.getElementById('contractorCosts').value) || 0;
+
+            const furnitureCosts = parseFloat(document.getElementById('furnitureCosts').value) || 0;
+
+            const softFurnishings = parseFloat(document.getElementById('softFurnishings').value) || 0;
+
+            const deepCleanCost = parseFloat(document.getElementById('deepCleanCost').value) || 0;
+
+            const electricalsCost = parseFloat(document.getElementById('electricalsCost').value) || 0;
+
+            const interiorDesignCost = parseFloat(document.getElementById('interiorDesignCost').value) || 0;
+
+            const paintingCost = parseFloat(document.getElementById('paintingCost').value) || 0;
+
+
+            const totalSetupCost = securityDeposit + contractorCosts + furnitureCosts + softFurnishings +
+
+                                 deepCleanCost + electricalsCost + interiorDesignCost + paintingCost;
+
+
+            document.getElementById('setupCost').value = totalSetupCost;
+
+            calculate();
+
+        }
+
+
+        // Tab switching
+
+        function showTab(tabName) {
+
+            const tabs = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+
+           
+
+            const buttons = document.querySelectorAll('.tab-btn');
+
+            buttons.forEach(btn => {
+
+                btn.classList.remove('border-blue-500', 'text-blue-600');
+
+                btn.classList.add('border-transparent', 'text-gray-500');
+
+            });
+
+           
+
+            event.target.classList.remove('border-transparent', 'text-gray-500');
+
+            event.target.classList.add('border-blue-500', 'text-blue-600');
+
+
+            // Initialize chart when dashboard is shown
+
+            if (tabName === 'dashboard') {
+
+                setTimeout(initChart, 100);
+
+            }
+
+        }
+
+
+        // Main calculation function
+
+        function calculate() {
+
+            const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+           
+
+            // Get basic inputs
+
+            const monthlyRent = parseFloat(document.getElementById('monthlyRent').value) || 0;
+
+            const availableNights = parseFloat(document.getElementById('availableNights').value) || 30;
+
+            const airbnbCommission = parseFloat(document.getElementById('airbnbCommission').value) || 0;
+
+            const setupCost = parseFloat(document.getElementById('setupCost').value) || 0;
+
+
+            // Get detailed monthly costs
+
+            const managementCosts = parseFloat(document.getElementById('managementCosts').value) || 0;
+
+            const cleaningCost = parseFloat(document.getElementById('cleaningCost').value) || 0;
+
+            const guestSupplies = parseFloat(document.getElementById('guestSupplies').value) || 0;
+
+            const utilities = parseFloat(document.getElementById('utilities').value) || 0;
+
+            const broadbandTV = parseFloat(document.getElementById('broadbandTV').value) || 0;
+
+            const insurance = parseFloat(document.getElementById('insurance').value) || 0;
+
+            const repairMaintenance = parseFloat(document.getElementById('repairMaintenance').value) || 0;
+
+            const priceLabs = parseFloat(document.getElementById('priceLabs').value) || 0;
+
+            const pms = parseFloat(document.getElementById('pms').value) || 0;
+
+            const channelManager = parseFloat(document.getElementById('channelManager').value) || 0;
+
+            const otherCosts = parseFloat(document.getElementById('otherCosts').value) || 0;
+
+
+            // Calculate total monthly OpEx
+
+            const totalMonthlyOpEx = monthlyRent + managementCosts + cleaningCost + guestSupplies +
+
+                                   utilities + broadbandTV + insurance + repairMaintenance +
+
+                                   priceLabs + pms + channelManager + otherCosts;
+
+           
+
+            // Update total display
+
+            document.getElementById('totalMonthlyOpEx').textContent = '$' + totalMonthlyOpEx.toLocaleString();
+
+
+            // Calculate monthly data
+
+            monthlyData = {};
+
+            let annualTotals = {
+
+                revenue: 0,
+
+                airbnbFees: 0,
+
+                mgmtFees: 0,
+
+                opEx: 0,
+
+                netProfit: 0,
+
+                nights: 0
+
+            };
+
+
+            months.forEach((month, index) => {
+
+                const adr = parseFloat(document.getElementById(`adr-${month}`).value) || 0;
+
+                const occupancy = parseFloat(document.getElementById(`occ-${month}`).value) || 0;
+
+               
+
+                const nightsSold = Math.round((occupancy / 100) * availableNights);
+
+                const revenue = adr * nightsSold;
+
+                const airbnbFees = revenue * (airbnbCommission / 100);
+
+                const opEx = totalMonthlyOpEx;
+
+                const netProfit = revenue - airbnbFees - opEx;
+
+
+                monthlyData[month] = {
+
+                    name: monthNames[index],
+
+                    adr,
+
+                    occupancy,
+
+                    nightsSold,
+
+                    revenue,
+
+                    airbnbFees,
+
+                    opEx,
+
+                    netProfit
+
+                };
+
+
+                annualTotals.revenue += revenue;
+
+                annualTotals.airbnbFees += airbnbFees;
+
+                annualTotals.opEx += opEx;
+
+                annualTotals.netProfit += netProfit;
+
+                annualTotals.nights += nightsSold;
+
+            });
+
+
+            // Calculate derived metrics
+
+            const avgMonthlyProfit = annualTotals.netProfit / 12;
+
+            const roce = setupCost > 0 ? (annualTotals.netProfit / setupCost) * 100 : 0;
+
+            const paybackPeriod = avgMonthlyProfit > 0 ? setupCost / avgMonthlyProfit : 0;
+
+            const netProfitMargin = annualTotals.revenue > 0 ? (annualTotals.netProfit / annualTotals.revenue) * 100 : 0;
+
+            const avgADR = annualTotals.revenue / annualTotals.nights;
+
+            const avgOccupancy = (annualTotals.nights / (12 * availableNights)) * 100;
+
+            const adrToRentRatio = monthlyRent > 0 ? (avgADR / (monthlyRent / 30)) * 100 : 0;
+
+
+            // Update Calculator tab
+
+            document.getElementById('annualRevenue').textContent = '$' + annualTotals.revenue.toLocaleString();
+
+            document.getElementById('annualNetProfit').textContent = '$' + annualTotals.netProfit.toLocaleString();
+
+            document.getElementById('roceDisplay').textContent = roce.toFixed(1) + '%';
+
+            document.getElementById('paybackDisplay').textContent = paybackPeriod.toFixed(1) + ' months';
+
+
+            // Update Projections tab
+
+            updateProjectionsTable();
+
+            document.getElementById('avgADR').textContent = '$' + avgADR.toFixed(0);
+
+            document.getElementById('avgOcc').textContent = avgOccupancy.toFixed(0) + '%';
+
+            document.getElementById('totalNights').textContent = annualTotals.nights;
+
+            document.getElementById('totalRevenue').textContent = '$' + annualTotals.revenue.toLocaleString();
+
+            document.getElementById('totalAirbnbFees').textContent = '$' + annualTotals.airbnbFees.toLocaleString();
+
+            document.getElementById('totalOpEx').textContent = '$' + annualTotals.opEx.toLocaleString();
+
+            document.getElementById('totalNetProfit').textContent = '$' + annualTotals.netProfit.toLocaleString();
+
+
+            // Update 4-Lens Filter
+
+            update4LensFilter(roce, avgMonthlyProfit, adrToRentRatio, avgOccupancy);
+
+
+            // Update Dashboard
+
+            updateDashboard(annualTotals, avgMonthlyProfit, roce, paybackPeriod, netProfitMargin, adrToRentRatio, avgOccupancy, setupCost);
+
+
+            // Update Print Summary
+
+            updatePrintSummary(annualTotals, avgMonthlyProfit, roce, paybackPeriod, netProfitMargin, avgADR, avgOccupancy, setupCost);
+
+
+            // Update Smart Score and Risk Flags
+
+            updateSmartScore(roce, avgMonthlyProfit, adrToRentRatio, avgOccupancy, netProfitMargin);
+
+            updateRiskFlags(annualTotals.netProfit, annualTotals.revenue, monthlyRent, roce, paybackPeriod);
+
+        }
+
+
+        function updateProjectionsTable() {
+
+            const tbody = document.getElementById('projectionsTable');
+
+            tbody.innerHTML = '';
+
+           
+
+            Object.values(monthlyData).forEach(month => {
+
+                const row = tbody.insertRow();
+
+                row.innerHTML = `
+
+                    <td class="px-4 py-3">${month.name}</td>
+
+                    <td class="px-4 py-3 text-right">$${month.adr}</td>
+
+                    <td class="px-4 py-3 text-right">${month.occupancy}%</td>
+
+                    <td class="px-4 py-3 text-right">${month.nightsSold}</td>
+
+                    <td class="px-4 py-3 text-right text-green-600">$${month.revenue.toLocaleString()}</td>
+
+                    <td class="px-4 py-3 text-right text-red-600">$${month.airbnbFees.toFixed(2)}</td>
+
+                    <td class="px-4 py-3 text-right text-red-600">$${month.opEx.toLocaleString()}</td>
+
+                    <td class="px-4 py-3 text-right text-blue-600">$${month.netProfit.toFixed(2)}</td>
+
+                `;
+
+            });
+
+        }
+
+
+        function update4LensFilter(roce, avgMonthlyProfit, adrToRentRatio, avgOccupancy) {
+
+            const rocePass = roce >= 100;
+
+            const profitPass = avgMonthlyProfit >= 1000;
+
+            const ratioPass = adrToRentRatio >= 8;
+
+            const occupancyPass = avgOccupancy >= 60;
+
+
+            // Update individual lens statuses
+
+            updateLensStatus('roce-status', 'roce-current', rocePass, roce.toFixed(1) + '%');
+
+            updateLensStatus('profit-status', 'profit-current', profitPass, '$' + avgMonthlyProfit.toFixed(2));
+
+            updateLensStatus('ratio-status', 'ratio-current', ratioPass, adrToRentRatio.toFixed(1) + '%');
+
+            updateLensStatus('occupancy-status', 'occupancy-current', occupancyPass, avgOccupancy.toFixed(0) + '%');
+
+
+            // Update overall verdict
+
+            const passedCriteria = [rocePass, profitPass, ratioPass, occupancyPass].filter(Boolean).length;
+
+            updateOverallVerdict(passedCriteria);
+
+        }
+
+
+        function updateLensStatus(statusId, currentId, passed, value) {
+
+            const statusEl = document.getElementById(statusId);
+
+            const currentEl = document.getElementById(currentId);
+
+           
+
+            if (passed) {
+
+                statusEl.textContent = '✅ PASS';
+
+                statusEl.className = 'pass';
+
+            } else {
+
+                statusEl.textContent = '❌ FAIL';
+
+                statusEl.className = 'fail';
+
+            }
+
+           
+
+            currentEl.textContent = value;
+
+        }
+
+
+        function updateOverallVerdict(passedCriteria) {
+
+            const verdict = document.getElementById('overall-verdict');
+
+            const verdictText = document.getElementById('verdict-text');
+
+
+            if (passedCriteria >= 3) {
+
+                verdict.className = 'mt-6 p-6 rounded-lg green-light';
+
+                verdict.innerHTML = `
+
+                    <div class="text-center">
+
+                        <span class="text-4xl mb-4 block">🟢</span>
+
+                        <h3 class="text-2xl font-bold text-white mb-2">Green Light</h3>
+
+                        <p class="text-white text-lg">${passedCriteria} of 4 criteria passed - Excellent investment opportunity!</p>
+
+                    </div>
+
+                `;
+
+            } else if (passedCriteria >= 2) {
+
+                verdict.className = 'mt-6 p-6 rounded-lg yellow-light';
+
+                verdict.innerHTML = `
+
+                    <div class="text-center">
+
+                        <span class="text-4xl mb-4 block">🟡</span>
+
+                        <h3 class="text-2xl font-bold text-white mb-2">Needs Review</h3>
+
+                        <p class="text-white text-lg">${passedCriteria} of 4 criteria passed - Requires optimization</p>
+
+                    </div>
+
+                `;
+
+            } else {
+
+                verdict.className = 'mt-6 p-6 rounded-lg red-light';
+
+                verdict.innerHTML = `
+
+                    <div class="text-center">
+
+                        <span class="text-4xl mb-4 block">🔴</span>
+
+                        <h3 class="text-2xl font-bold text-white mb-2">Red Light</h3>
+
+                        <p class="text-white text-lg">${passedCriteria} of 4 criteria passed - High risk investment</p>
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+        function updateDashboard(annualTotals, avgMonthlyProfit, roce, paybackPeriod, netProfitMargin, adrToRentRatio, avgOccupancy, setupCost) {
+
+            document.getElementById('dash-revenue').textContent = '$' + annualTotals.revenue.toLocaleString();
+
+            document.getElementById('dash-profit').textContent = '$' + annualTotals.netProfit.toLocaleString();
+
+            document.getElementById('dash-roce').textContent = roce.toFixed(1) + '%';
+
+            document.getElementById('dash-payback').textContent = paybackPeriod.toFixed(1) + ' months';
+
+            document.getElementById('dash-setup').textContent = '$' + setupCost.toLocaleString();
+
+            document.getElementById('dash-margin').textContent = netProfitMargin.toFixed(1) + '%';
+
+            document.getElementById('dash-ratio').textContent = adrToRentRatio.toFixed(1) + '%';
+
+            document.getElementById('dash-occupancy').textContent = avgOccupancy.toFixed(0) + '%';
+
+
+            // Update traffic light
+
+            const passedCriteria = [
+
+                roce >= 100,
+
+                avgMonthlyProfit >= 1000,
+
+                adrToRentRatio >= 8,
+
+                avgOccupancy >= 60
+
+            ].filter(Boolean).length;
+
+
+            const trafficText = document.getElementById('traffic-text');
+
+            const trafficDetail = document.getElementById('traffic-detail');
+
+
+            if (passedCriteria >= 3) {
+
+                trafficText.textContent = 'Green Light';
+
+                trafficDetail.textContent = `${passedCriteria} of 4 criteria passed`;
+
+            } else if (passedCriteria >= 2) {
+
+                trafficText.textContent = 'Needs Review';
+
+                trafficDetail.textContent = `${passedCriteria} of 4 criteria passed`;
+
+            } else {
+
+                trafficText.textContent = 'Red Light';
+
+                trafficDetail.textContent = `${passedCriteria} of 4 criteria passed`;
+
+            }
+
+        }
+
+
+        function updatePrintSummary(annualTotals, avgMonthlyProfit, roce, paybackPeriod, netProfitMargin, avgADR, avgOccupancy, setupCost) {
+
+            const address = document.getElementById('propertyAddress').value || '123 Main St, City';
+
+            const rent = document.getElementById('monthlyRent').value;
+
+
+            document.getElementById('summary-address').textContent = address;
+
+            document.getElementById('summary-rent').textContent = '$' + parseFloat(rent).toLocaleString();
+
+            document.getElementById('summary-adr').textContent = '$' + avgADR.toFixed(0);
+
+            document.getElementById('summary-occupancy').textContent = avgOccupancy.toFixed(0) + '%';
+
+            document.getElementById('summary-setup').textContent = '$' + setupCost.toLocaleString();
+
+            document.getElementById('summary-revenue').textContent = '$' + annualTotals.revenue.toLocaleString();
+
+            document.getElementById('summary-profit').textContent = '$' + annualTotals.netProfit.toLocaleString();
+
+            document.getElementById('summary-margin').textContent = netProfitMargin.toFixed(1) + '%';
+
+            document.getElementById('summary-roce').textContent = roce.toFixed(1) + '%';
+
+            document.getElementById('summary-payback').textContent = paybackPeriod.toFixed(1) + ' months';
+
+
+            // Update summary verdict
+
+            const passedCriteria = [
+
+                roce >= 100,
+
+                avgMonthlyProfit >= 1000,
+
+                (avgADR / (parseFloat(rent) / 30)) * 100 >= 8,
+
+                avgOccupancy >= 60
+
+            ].filter(Boolean).length;
+
+
+            const summaryVerdict = document.getElementById('summary-verdict');
+
+            if (passedCriteria >= 3) {
+
+                summaryVerdict.className = 'p-6 rounded-lg text-center green-light';
+
+                summaryVerdict.innerHTML = `
+
+                    <div class="mb-4"><span class="text-6xl">🟢</span></div>
+
+                    <h4 class="text-2xl font-bold text-white mb-3">Green Light</h4>
+
+                    <p class="text-white text-lg mb-4">This property meets all key investment criteria and represents an excellent opportunity.</p>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+
+                        <div class="bg-white bg-opacity-20 rounded p-2">
+
+                            <div class="font-semibold">ROCE</div>
+
+                            <div>✅ ${roce.toFixed(0)}%</div>
+
+                        </div>
+
+                        <div class="bg-white bg-opacity-20 rounded p-2">
+
+                            <div class="font-semibold">Profit</div>
+
+                            <div>✅ $${avgMonthlyProfit.toFixed(0)}/mo</div>
+
+                        </div>
+
+                        <div class="bg-white bg-opacity-20 rounded p-2">
+
+                            <div class="font-semibold">ADR Ratio</div>
+
+                            <div>✅ ${((avgADR / (parseFloat(rent) / 30)) * 100).toFixed(1)}%</div>
+
+                        </div>
+
+                        <div class="bg-white bg-opacity-20 rounded p-2">
+
+                            <div class="font-semibold">Occupancy</div>
+
+                            <div>✅ ${avgOccupancy.toFixed(0)}%</div>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            } else if (passedCriteria >= 2) {
+
+                summaryVerdict.className = 'p-6 rounded-lg text-center yellow-light';
+
+                summaryVerdict.innerHTML = `
+
+                    <div class="mb-4"><span class="text-6xl">🟡</span></div>
+
+                    <h4 class="text-2xl font-bold text-white mb-3">Needs Review</h4>
+
+                    <p class="text-white text-lg">This property shows potential but requires optimization before proceeding.</p>
+
+                `;
+
+            } else {
+
+                summaryVerdict.className = 'p-6 rounded-lg text-center red-light';
+
+                summaryVerdict.innerHTML = `
+
+                    <div class="mb-4"><span class="text-6xl">🔴</span></div>
+
+                    <h4 class="text-2xl font-bold text-white mb-3">Red Light</h4>
+
+                    <p class="text-white text-lg">This property does not meet key investment criteria and should be reconsidered.</p>
+
+                `;
+
+            }
+
+        }
+
+
+        function updateSmartScore(roce, avgMonthlyProfit, adrToRentRatio, avgOccupancy, netProfitMargin) {
+
+            let score = 0;
+
+           
+
+            // ROCE (30 points)
+
+            if (roce >= 200) score += 30;
+
+            else if (roce >= 100) score += 25;
+
+            else if (roce >= 50) score += 15;
+
+            else if (roce >= 30) score += 10;
+
+           
+
+            // Profit (25 points)
+
+            if (avgMonthlyProfit >= 2000) score += 25;
+
+            else if (avgMonthlyProfit >= 1000) score += 20;
+
+            else if (avgMonthlyProfit >= 500) score += 10;
+
+            else if (avgMonthlyProfit >= 0) score += 5;
+
+           
+
+            // Market feasibility (20 points)
+
+            if (adrToRentRatio >= 10) score += 20;
+
+            else if (adrToRentRatio >= 8) score += 15;
+
+            else if (adrToRentRatio >= 6) score += 10;
+
+            else if (adrToRentRatio >= 4) score += 5;
+
+           
+
+            // Risk exposure (15 points)
+
+            if (avgOccupancy >= 80) score += 15;
+
+            else if (avgOccupancy >= 70) score += 12;
+
+            else if (avgOccupancy >= 60) score += 8;
+
+            else if (avgOccupancy >= 50) score += 5;
+
+           
+
+            // Setup cost efficiency (10 points)
+
+            if (netProfitMargin >= 50) score += 10;
+
+            else if (netProfitMargin >= 30) score += 8;
+
+            else if (netProfitMargin >= 20) score += 5;
+
+            else if (netProfitMargin >= 10) score += 3;
+
+
+            const smartScoreEl = document.getElementById('smartScore');
+
+            const scoreBar = document.getElementById('scoreBar');
+
+            const scoreValue = document.getElementById('scoreValue');
+
+
+            scoreBar.style.width = score + '%';
+
+            scoreValue.textContent = score + '/100';
+
+
+            if (score >= 80) {
+
+                smartScoreEl.className = 'mt-6 p-4 rounded-lg green-light';
+
+            } else if (score >= 60) {
+
+                smartScoreEl.className = 'mt-6 p-4 rounded-lg yellow-light';
+
+            } else {
+
+                smartScoreEl.className = 'mt-6 p-4 rounded-lg red-light';
+
+            }
+
+        }
+
+
+        function updateRiskFlags(netProfit, revenue, rent, roce, paybackPeriod) {
+
+            const riskFlags = document.getElementById('riskFlags');
+
+            riskFlags.innerHTML = '';
+
+
+            const flags = [];
+
+           
+
+            if (netProfit <= 0) {
+
+                flags.push('🚨 Negative profit detected');
+
+            }
+
+            if (revenue < rent * 12) {
+
+                flags.push('⚠️ Revenue below annual rent');
+
+            }
+
+            if (roce < 30) {
+
+                flags.push('⚠️ Low ROCE (<30%)');
+
+            }
+
+            if (paybackPeriod > 24) {
+
+                flags.push('⚠️ Long payback period (>24 months)');
+
+            }
+
+
+            flags.forEach(flag => {
+
+                const flagEl = document.createElement('div');
+
+                flagEl.className = 'p-2 bg-red-100 text-red-800 rounded text-sm risk-flag';
+
+                flagEl.textContent = flag;
+
+                riskFlags.appendChild(flagEl);
+
+            });
+
+        }
+
+
+        function initChart() {
+
+            const ctx = document.getElementById('performanceChart');
+
+            if (!ctx) return;
+
+
+            if (performanceChart) {
+
+                performanceChart.destroy();
+
+            }
+
+
+            const months = Object.keys(monthlyData);
+
+            const revenues = months.map(month => monthlyData[month].revenue);
+
+            const profits = months.map(month => monthlyData[month].netProfit);
+
+
+            performanceChart = new Chart(ctx, {
+
+                type: 'line',
+
+                data: {
+
+                    labels: months.map(month => monthlyData[month].name),
+
+                    datasets: [{
+
+                        label: 'Revenue',
+
+                        data: revenues,
+
+                        borderColor: 'rgb(34, 197, 94)',
+
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+
+                        tension: 0.4
+
+                    }, {
+
+                        label: 'Net Profit',
+
+                        data: profits,
+
+                        borderColor: 'rgb(59, 130, 246)',
+
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+
+                        tension: 0.4
+
+                    }]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            ticks: {
+
+                                callback: function(value) {
+
+                                    return '$' + value.toLocaleString();
+
+                                }
+
+                            }
+
+                        }
+
+                    },
+
+                    plugins: {
+
+                        tooltip: {
+
+                            callbacks: {
+
+                                label: function(context) {
+
+                                    return context.dataset.label + ': $' + context.parsed.y.toLocaleString();
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            });
+
+        }
+
+
+        // Sensitivity Analysis
+
+        function applySensitivity(scenario) {
+
+            const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+           
+
+            let adrMultiplier, occMultiplier;
+
+           
+
+            switch(scenario) {
+
+                case 'conservative':
+
+                    adrMultiplier = 0.8;
+
+                    occMultiplier = 0.7;
+
+                    break;
+
+                case 'realistic':
+
+                    adrMultiplier = 1.0;
+
+                    occMultiplier = 1.0;
+
+                    break;
+
+                case 'aggressive':
+
+                    adrMultiplier = 1.2;
+
+                    occMultiplier = 1.1;
+
+                    break;
+
+                case 'worst':
+
+                    adrMultiplier = 0.6;
+
+                    occMultiplier = 0.5;
+
+                    break;
+
+            }
+
+
+            months.forEach(month => {
+
+                const adrInput = document.getElementById(`adr-${month}`);
+
+                const occInput = document.getElementById(`occ-${month}`);
+
+               
+
+                const baseADR = parseFloat(adrInput.value);
+
+                const baseOcc = parseFloat(occInput.value);
+
+               
+
+                adrInput.value = Math.round(baseADR * adrMultiplier);
+
+                occInput.value = Math.min(100, Math.round(baseOcc * occMultiplier));
+
+            });
+
+
+            calculate();
+
+        }
+
+
+        // Case Study Loading
+
+        function loadCaseStudy(caseStudy) {
+
+            const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+           
+
+            switch(caseStudy) {
+
+                case 'brisbane':
+
+                    document.getElementById('propertyAddress').value = 'Brisbane, QLD, Australia';
+
+                    document.getElementById('monthlyRent').value = '2800';
+
+                    document.getElementById('setupCost').value = '11200';
+
+                    months.forEach(month => {
+
+                        document.getElementById(`adr-${month}`).value = '240';
+
+                        document.getElementById(`occ-${month}`).value = '85';
+
+                    });
+
+                    break;
+
+                case 'dallas':
+
+                    document.getElementById('propertyAddress').value = 'Dallas, TX, USA';
+
+                    document.getElementById('monthlyRent').value = '2500';
+
+                    document.getElementById('setupCost').value = '10000';
+
+                    months.forEach(month => {
+
+                        document.getElementById(`adr-${month}`).value = '220';
+
+                        document.getElementById(`occ-${month}`).value = '80';
+
+                    });
+
+                    break;
+
+                case 'brighton':
+
+                    document.getElementById('propertyAddress').value = 'Brighton, UK';
+
+                    document.getElementById('monthlyRent').value = '2100';
+
+                    document.getElementById('setupCost').value = '9000';
+
+                    months.forEach(month => {
+
+                        document.getElementById(`adr-${month}`).value = '170';
+
+                        document.getElementById(`occ-${month}`).value = '75';
+
+                    });
+
+                    break;
+
+            }
+
+           
+
+            calculate();
+
+            showTab('calculator');
+
+        }
+
+
+        // Save/Load Scenarios
+
+        function saveScenario() {
+
+            const name = prompt('Enter a name for this scenario:');
+
+            if (!name) return;
+
+
+            const scenario = {
+
+                id: Date.now(),
+
+                name: name,
+
+                address: document.getElementById('propertyAddress').value,
+
+                rent: document.getElementById('monthlyRent').value,
+
+                setupCost: document.getElementById('setupCost').value,
+
+                setupBreakdown: {
+
+                    securityDeposit: document.getElementById('securityDeposit').value,
+
+                    contractorCosts: document.getElementById('contractorCosts').value,
+
+                    furnitureCosts: document.getElementById('furnitureCosts').value,
+
+                    softFurnishings: document.getElementById('softFurnishings').value,
+
+                    deepCleanCost: document.getElementById('deepCleanCost').value,
+
+                    electricalsCost: document.getElementById('electricalsCost').value,
+
+                    interiorDesignCost: document.getElementById('interiorDesignCost').value,
+
+                    paintingCost: document.getElementById('paintingCost').value
+
+                },
+
+                data: {}
+
+            };
+
+
+            const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+            months.forEach(month => {
+
+                scenario.data[month] = {
+
+                    adr: document.getElementById(`adr-${month}`).value,
+
+                    occ: document.getElementById(`occ-${month}`).value
+
+                };
+
+            });
+
+
+            savedScenarios.push(scenario);
+
+            localStorage.setItem('strScenarios', JSON.stringify(savedScenarios));
+
+            updateSavedScenarios();
+
+            alert('Scenario saved successfully!');
+
+        }
+
+
+        function updateSavedScenarios() {
+
+            const container = document.getElementById('savedScenarios');
+
+            container.innerHTML = '';
+
+
+            if (savedScenarios.length === 0) {
+
+                container.innerHTML = `
+
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+
+                        <p class="text-gray-500 mb-2">No saved scenarios yet</p>
+
+                        <p class="text-sm text-gray-400">Save your current calculation to compare deals</p>
+
+                    </div>
+
+                `;
+
+                return;
+
+            }
+
+
+            savedScenarios.forEach(scenario => {
+
+                const card = document.createElement('div');
+
+                card.className = 'border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow';
+
+                card.innerHTML = `
+
+                    <h4 class="font-semibold text-gray-900 mb-2">${scenario.name}</h4>
+
+                    <p class="text-sm text-gray-600 mb-2">${scenario.address}</p>
+
+                    <p class="text-sm text-gray-500 mb-3">Rent: $${parseFloat(scenario.rent).toLocaleString()}</p>
+
+                    <div class="flex space-x-2">
+
+                        <button onclick="loadScenario(${scenario.id})" class="flex-1 bg-blue-600 text-white py-1 px-2 rounded text-sm hover:bg-blue-700">Load</button>
+
+                        <button onclick="deleteScenario(${scenario.id})" class="bg-red-600 text-white py-1 px-2 rounded text-sm hover:bg-red-700">Delete</button>
+
+                    </div>
+
+                `;
+
+                container.appendChild(card);
+
+            });
+
+        }
+
+
+        function loadScenario(id) {
+
+            const scenario = savedScenarios.find(s => s.id === id);
+
+            if (!scenario) return;
+
+
+            document.getElementById('propertyAddress').value = scenario.address;
+
+            document.getElementById('monthlyRent').value = scenario.rent;
+
+           
+
+            // Load setup cost breakdown if available
+
+            if (scenario.setupBreakdown) {
+
+                document.getElementById('securityDeposit').value = scenario.setupBreakdown.securityDeposit || '';
+
+                document.getElementById('contractorCosts').value = scenario.setupBreakdown.contractorCosts || '';
+
+                document.getElementById('furnitureCosts').value = scenario.setupBreakdown.furnitureCosts || '';
+
+                document.getElementById('softFurnishings').value = scenario.setupBreakdown.softFurnishings || '';
+
+                document.getElementById('deepCleanCost').value = scenario.setupBreakdown.deepCleanCost || '';
+
+                document.getElementById('electricalsCost').value = scenario.setupBreakdown.electricalsCost || '';
+
+                document.getElementById('interiorDesignCost').value = scenario.setupBreakdown.interiorDesignCost || '';
+
+                document.getElementById('paintingCost').value = scenario.setupBreakdown.paintingCost || '';
+
+                calculateSetupCost();
+
+            } else {
+
+                // Fallback for older saved scenarios
+
+                document.getElementById('setupCost').value = scenario.setupCost;
+
+            }
+
+
+            Object.keys(scenario.data).forEach(month => {
+
+                document.getElementById(`adr-${month}`).value = scenario.data[month].adr;
+
+                document.getElementById(`occ-${month}`).value = scenario.data[month].occ;
+
+            });
+
+
+            calculate();
+
+            showTab('calculator');
+
+        }
+
+
+        function deleteScenario(id) {
+
+            if (!confirm('Are you sure you want to delete this scenario?')) return;
+
+           
+
+            savedScenarios = savedScenarios.filter(s => s.id !== id);
+
+            localStorage.setItem('strScenarios', JSON.stringify(savedScenarios));
+
+            updateSavedScenarios();
+
+        }
+
+
+        // Export Functions
+
+        function exportExcel() {
+
+            alert('Excel export functionality would be implemented with a library like SheetJS in a production environment.');
+
+        }
+
+
+        function resetCalculator() {
+
+            if (!confirm('Are you sure you want to reset all inputs?')) return;
+
+           
+
+            document.getElementById('propertyAddress').value = '';
+
+            document.getElementById('monthlyRent').value = '2000';
+
+           
+
+            // Reset setup cost breakdown
+
+            document.getElementById('securityDeposit').value = '2000';
+
+            document.getElementById('contractorCosts').value = '800';
+
+            document.getElementById('furnitureCosts').value = '1500';
+
+            document.getElementById('softFurnishings').value = '400';
+
+            document.getElementById('deepCleanCost').value = '150';
+
+            document.getElementById('electricalsCost').value = '100';
+
+            document.getElementById('interiorDesignCost').value = '';
+
+            document.getElementById('paintingCost').value = '50';
+
+
+            // Reset monthly operating costs
+
+            document.getElementById('managementCosts').value = '200';
+
+            document.getElementById('cleaningCost').value = '300';
+
+            document.getElementById('guestSupplies').value = '80';
+
+            document.getElementById('utilities').value = '200';
+
+            document.getElementById('broadbandTV').value = '60';
+
+            document.getElementById('insurance').value = '120';
+
+            document.getElementById('repairMaintenance').value = '150';
+
+            document.getElementById('priceLabs').value = '20';
+
+            document.getElementById('pms').value = '50';
+
+            document.getElementById('channelManager').value = '30';
+
+            document.getElementById('otherCosts').value = '50';
+
+           
+
+            const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+            const defaultADRs = [150, 160, 170, 180, 190, 200, 210, 200, 180, 170, 160, 180];
+
+            const defaultOccs = [60, 65, 70, 75, 80, 85, 90, 85, 75, 70, 65, 75];
+
+           
+
+            months.forEach((month, index) => {
+
+                document.getElementById(`adr-${month}`).value = defaultADRs[index];
+
+                document.getElementById(`occ-${month}`).value = defaultOccs[index];
+
+            });
+
+           
+
+            calculateSetupCost();
+
+            syncRentFields();
+
+            calculate();
+
+        }
+
+    </script>
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'969c29ebb1fc8652',t:'MTc1NDI5MDY3OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+
+</html>
